@@ -22,7 +22,13 @@ int main() {
             MessageT<Init> msg;
             from_json(j, msg);
             node.step(msg);
-        } else {
+        } else if (type == "generate") {
+            MessageT<Generate> msg;
+            from_json(j, msg);
+            node.step(msg);
+        }
+
+        else {
             std::cerr << j.dump(4);
         }
     }

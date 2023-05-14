@@ -20,6 +20,7 @@ class MessageVisitor {
 public:
     virtual void visit(MessageT<Echo>& msg) = 0;
     virtual void visit(MessageT<Init>& msg) = 0;
+    virtual void visit(MessageT<Generate>& msg) = 0;
     // Add visit methods for other message types
 };
 

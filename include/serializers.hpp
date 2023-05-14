@@ -38,6 +38,12 @@ struct Init : IdBody {
 
 struct InitOk : Body, Reply {};
 
+struct Generate : IdBody {};
+
+struct GenerateOk : Reply, IdBody {
+    string gen_id;
+};
+
 template<typename B>
 struct Message {
     string src;
@@ -102,6 +108,29 @@ void to_json(json& j, const EchoReply& r) {
 void from_json(const json& j, EchoReply& r) {
     j.at("in_reply_to").get_to(r.in_reply_to);
     from_json(j, static_cast<Echo&>(r));
+}
+
+void to_json(json& j, const GenerateOk& ok) {
+    json idbody, reply;
+    to_json(idbody, static_cast<const IdBody&>(ok));
+    to_json(reply, static_cast<const Reply&>(ok));
+    j = json{{"id", ok.gen_id}};
+    j.update(idbody);
+    j.update(reply);
+}
+
+void from_json(const json& j, GenerateOk& ok) {
+    j.at("id").get_to(ok.gen_id);
+    from_json(j, static_cast<IdBody&>(ok));
+    from_json(j, static_cast<Reply&>(ok));
+}
+
+void to_json(json& j, const Generate& g) {
+    to_json(j, static_cast<const IdBody&>(g));
+}
+
+void from_json(const json& j, Generate& g) {
+    from_json(j, static_cast<IdBody&>(g));
 }
 
 // Init to json
