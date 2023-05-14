@@ -1,9 +1,13 @@
+#ifndef MAEL_TYPES
+#define MAEL_TYPES
+
 #include <string>
 #include <optional>
 #include <vector>
 #include <iostream>
 #include <cstdio>
-#include "external/nlohmann_json/single_include/nlohmann/json.hpp"
+#include "json.hpp"
+
 using std::string;
 using std::optional;
 using std::vector;
@@ -21,11 +25,11 @@ struct IdBody : Body {
     int id;
 };
 
-struct EchoBody : IdBody {
+struct Echo : IdBody {
     string echo;
 };
 
-struct EchoReply : EchoBody, Reply {};
+struct EchoReply : Echo, Reply {};
 
 struct Init : IdBody {
     string node_id;
@@ -73,7 +77,7 @@ void from_json(const json& j, IdBody& b) {
 }
 
 // Echo to json
-void to_json(json& j, const EchoBody& e) {
+void to_json(json& j, const Echo& e) {
     json base;
     j = json{{"echo", e.echo}};
     to_json(base, static_cast<const IdBody&>(e));
@@ -81,7 +85,7 @@ void to_json(json& j, const EchoBody& e) {
 }
 
 // Echo from json
-void from_json(const json& j, EchoBody& e) {
+void from_json(const json& j, Echo& e) {
     j.at("echo").get_to(e.echo);
     from_json(j, static_cast<IdBody&>(e));
 }
@@ -90,14 +94,14 @@ void from_json(const json& j, EchoBody& e) {
 void to_json(json& j, const EchoReply& r) {
     json base;
     j = json{{"in_reply_to", r.in_reply_to}};
-    to_json(base, static_cast<const EchoBody&>(r));
+    to_json(base, static_cast<const Echo&>(r));
     j.update(base);
 }
 
 // Echo reply from json
 void from_json(const json& j, EchoReply& r) {
     j.at("in_reply_to").get_to(r.in_reply_to);
-    from_json(j, static_cast<EchoBody&>(r));
+    from_json(j, static_cast<Echo&>(r));
 }
 
 // Init to json
@@ -147,3 +151,5 @@ void from_json(const json& j, Message<BodyType>& m) {
     j.at("src").get_to(m.src);
     j.at("dest").get_to(m.dst);
 }
+
+#endif

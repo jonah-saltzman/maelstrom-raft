@@ -1,7 +1,10 @@
+#ifndef MAEL_ITER
+#define MAEL_ITER
+
 #include <iostream>
 #include <iterator>
 #include <sstream>
-#include "external/nlohmann_json/single_include/nlohmann/json.hpp"
+#include "json.hpp"
 
 class JsonInputIterator {
 public:
@@ -54,3 +57,5 @@ private:
     std::istream* input_stream = nullptr;
     nlohmann::json current_json;
 };
+
+#endif
