@@ -35,7 +35,7 @@ private:
 
 // Generate impl
 void Node::visit(MessageT<Generate>& msg) {
-    string gen_id = node_id + std::format("{}", msg_id);
+    string gen_id = std::format("{}-{}", node_id, msg_id);
     GenerateOk ok;
     ok.gen_id = gen_id;
     ok.id = msg_id;

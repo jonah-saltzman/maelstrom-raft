@@ -2,3 +2,5 @@
 main
 store
 test
+compile_commands.json
+.cache
