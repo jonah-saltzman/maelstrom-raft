@@ -6,43 +6,64 @@
 #include <vector>
 #include <iostream>
 #include <cstdio>
+#include <map>
+#include <set>
 #include "json.hpp"
 
 using std::string;
 using std::optional;
 using std::vector;
 using nlohmann::json;
+using TopologyT = std::map<string, std::set<string>>;
 
 struct Body {
     string typ;
-};
-
-struct Reply {
-    int in_reply_to;
 };
 
 struct IdBody : Body {
     int id;
 };
 
+struct Reply {
+    int in_reply_to;
+};
+
 struct Echo : IdBody {
     string echo;
 };
 
-struct EchoReply : Echo, Reply {};
+struct EchoOk : Echo, Reply {};
 
 struct Init : IdBody {
     string node_id;
     vector<string> node_ids;
 };
 
-struct InitOk : Body, Reply {};
+struct InitOk : IdBody, Reply {};
 
 struct Generate : IdBody {};
 
 struct GenerateOk : Reply, IdBody {
     string gen_id;
 };
+
+struct Broadcast : IdBody {
+    int message;
+};
+
+struct BroadcastOk : Reply, IdBody {};
+
+struct Read : IdBody {};
+
+struct ReadOk : Reply, IdBody {
+    vector<int> messages;
+};
+
+struct Topology : IdBody {
+    TopologyT topology;
+};
+
+struct TopologyOk : Reply, IdBody {};
 
 template<typename B>
 struct Message {
@@ -51,116 +72,35 @@ struct Message {
     B body;
 };
 
-// Reply to json
-void to_json(json& j, const Reply& r) {
-    j = json{{"in_reply_to", r.in_reply_to}};
-}
 
-// Reply from json
-void from_json(const json& j, Reply& r) {
-    j.at("in_reply_to").get_to(r.in_reply_to);
-}
+void to_json(json& j, const Body& b);
+void to_json(json& j, const IdBody& b);
+void to_json(json& j, const Reply& r);
+void to_json(json& j, const EchoOk& r);
+void to_json(json& j, const GenerateOk& ok);
+void to_json(json& j, const BroadcastOk& ok);
+void to_json(json& j, const ReadOk& ok);
+void to_json(json& j, const TopologyOk& ok);
+void to_json(json& j, const InitOk& ok);
 
-// Body to json
-void to_json(json& j, const Body& b) {
-    j = json{{"type", b.typ}};
-}
+void from_json(const json& j, Body& b);
+void from_json(const json& j, IdBody& b);
+void from_json(const json& j, Reply& r);
+void from_json(const json& j, Echo& e);
+void from_json(const json& j, Generate& g);
+void from_json(const json& j, Broadcast& b);
+void from_json(const json& j, Read& r);
+void from_json(const json& j, Topology& t);
+void from_json(const json& j, Init& i);
 
-// Body from json
-void from_json(const json& j, Body& b) {
-    j.at("type").get_to(b.typ);
-}
-
-// IdBody to json
-void to_json(json& j, const IdBody& b) {
-    j = json{{"type", b.typ}, {"msg_id", b.id}};
-}
-
-// IdBody from json
-void from_json(const json& j, IdBody& b) {
-    j.at("type").get_to(b.typ);
-    j.at("msg_id").get_to(b.id);
-}
-
-// Echo to json
-void to_json(json& j, const Echo& e) {
-    json base;
-    j = json{{"echo", e.echo}};
-    to_json(base, static_cast<const IdBody&>(e));
-    j.update(base);
-}
-
-// Echo from json
-void from_json(const json& j, Echo& e) {
-    j.at("echo").get_to(e.echo);
-    from_json(j, static_cast<IdBody&>(e));
-}
-
-// Echo reply to json
-void to_json(json& j, const EchoReply& r) {
-    json base;
-    j = json{{"in_reply_to", r.in_reply_to}};
-    to_json(base, static_cast<const Echo&>(r));
-    j.update(base);
-}
-
-// Echo reply from json
-void from_json(const json& j, EchoReply& r) {
-    j.at("in_reply_to").get_to(r.in_reply_to);
-    from_json(j, static_cast<Echo&>(r));
-}
-
-void to_json(json& j, const GenerateOk& ok) {
+// Generic reply to json
+template<typename T>
+void reply_to_json(json& j, const T& ok) {
     json idbody, reply;
     to_json(idbody, static_cast<const IdBody&>(ok));
     to_json(reply, static_cast<const Reply&>(ok));
-    j = json{{"id", ok.gen_id}};
     j.update(idbody);
     j.update(reply);
-}
-
-void from_json(const json& j, GenerateOk& ok) {
-    j.at("id").get_to(ok.gen_id);
-    from_json(j, static_cast<IdBody&>(ok));
-    from_json(j, static_cast<Reply&>(ok));
-}
-
-void to_json(json& j, const Generate& g) {
-    to_json(j, static_cast<const IdBody&>(g));
-}
-
-void from_json(const json& j, Generate& g) {
-    from_json(j, static_cast<IdBody&>(g));
-}
-
-// Init to json
-void to_json(json& j, const Init& i) {
-    json base;
-    j = json{{"node_id", i.node_id}, "node_ids", i.node_ids};
-    to_json(j, static_cast<const IdBody&>(i));
-    j.update(base);
-}
-
-// Init from json
-void from_json(const json& j, Init& i) {
-    j.at("node_id").get_to(i.node_id);
-    j.at("node_ids").get_to(i.node_ids);
-    from_json(j, static_cast<IdBody&>(i));
-}
-
-// InitOk to json
-void to_json(json& j, const InitOk& ok) {
-    json body, reply;
-    to_json(body, static_cast<const Body&>(ok));
-    to_json(reply, static_cast<const Reply&>(ok));
-    j = body;
-    j.update(reply);
-}
-
-// InitOk from json
-void from_json(const json& j, InitOk& ok) {
-    from_json(j, static_cast<Body&>(ok));
-    from_json(j, static_cast<Reply&>(ok));
 }
 
 // Message to json

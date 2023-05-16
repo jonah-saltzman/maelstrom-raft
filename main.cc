@@ -3,6 +3,12 @@
 #include "node.hpp"
 #include "visitors.hpp"
 
+template <typename T>
+void stepper(Node& node, json& j) {
+    MessageT<T> msg;
+    from_json(j, msg);
+    node.step(msg);
+}
 
 int main() {
     JsonInputIterator json_begin(std::cin);
@@ -15,20 +21,18 @@ int main() {
         std::cerr << j.dump(4) << std::endl;
         string type = j["body"]["type"];
         if (type == "echo") {
-            MessageT<Echo> msg;
-            from_json(j, msg);
-            node.step(msg);
+            stepper<Echo>(node, j);
         } else if (type == "init") {
-            MessageT<Init> msg;
-            from_json(j, msg);
-            node.step(msg);
+            stepper<Init>(node, j);
         } else if (type == "generate") {
-            MessageT<Generate> msg;
-            from_json(j, msg);
-            node.step(msg);
-        }
-
-        else {
+            stepper<Generate>(node, j);
+        } else if (type == "broadcast") {
+            stepper<Broadcast>(node, j);
+        } else if (type == "read") {
+            stepper<Read>(node, j);
+        } else if (type == "topology") {
+            stepper<Topology>(node, j);
+        } else {
             std::cerr << j.dump(4);
         }
     }

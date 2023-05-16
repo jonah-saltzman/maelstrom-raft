@@ -6,11 +6,14 @@ TARGET = test
 # Add header files as dependencies
 HEADERS = $(wildcard include/*.hpp)
 
+# Add source files
+SRCS = main.cc serializers.cc
+
 # Rules
 all: $(TARGET)
 
-$(TARGET): main.cc $(HEADERS)
-	$(CXX) $(CXXFLAGS) $< -o $@
+$(TARGET): $(SRCS) $(HEADERS)
+	$(CXX) $(CXXFLAGS) $(SRCS) -o $@
 
 clean:
 	rm -f $(TARGET)

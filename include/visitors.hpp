@@ -21,6 +21,9 @@ public:
     virtual void visit(MessageT<Echo>& msg) = 0;
     virtual void visit(MessageT<Init>& msg) = 0;
     virtual void visit(MessageT<Generate>& msg) = 0;
+    virtual void visit(MessageT<Broadcast>& msg) = 0;
+    virtual void visit(MessageT<Read>& msg) = 0;
+    virtual void visit(MessageT<Topology>& msg) = 0;
     // Add visit methods for other message types
 };
 
