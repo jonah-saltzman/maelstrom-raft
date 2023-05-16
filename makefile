@@ -1,6 +1,6 @@
 # Variables
 CXX = g++
-CXXFLAGS = -std=c++20 -Iinclude -Iexternal/nlohmann_json/single_include/nlohmann
+CXXFLAGS = -std=c++20 -Iinclude
 TARGET = test
 
 # Add header files as dependencies

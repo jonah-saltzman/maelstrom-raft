@@ -4,7 +4,7 @@
 #include <iostream>
 #include <iterator>
 #include <sstream>
-#include "json.hpp"
+#include "nlohmann/json.hpp"
 
 class JsonInputIterator {
 public:

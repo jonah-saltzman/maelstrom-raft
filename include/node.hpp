@@ -6,8 +6,6 @@
 #include "format"
 #include <cstdio>
 
-#define DEBUG
-
 class Node : public MessageVisitor {
 public:
     Node(std::ostream &out): out(out) {}
@@ -21,10 +19,6 @@ public:
     void send(T& msg) {
         json j;
         to_json(j, msg);
-        #ifdef DEBUG 
-        fprintf(stderr, "sending: \n");
-        std::cerr << j.dump(4) << std::endl;
-        #endif
         out << j.dump() << std::endl;
         msg_id += 1;
     }
