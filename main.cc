@@ -17,8 +17,6 @@ int main() {
 
     for (auto it = json_begin; it != json_end; ++it) {
         nlohmann::json j = *it;
-        fprintf(stderr, "received: \n");
-        std::cerr << j.dump(4) << std::endl;
         string type = j["body"]["type"];
         if (type == "echo") {
             stepper<Echo>(node, j);

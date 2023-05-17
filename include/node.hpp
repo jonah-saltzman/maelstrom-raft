@@ -11,17 +11,10 @@ public:
     Node(std::ostream &out): out(out) {}
 
     template<typename T>
-    void step(MessageT<T>& msg) {
-        msg.accept(*this);
-    }
+    void step(MessageT<T>& msg);
 
     template<typename T>
-    void send(T& msg) {
-        json j;
-        to_json(j, msg);
-        out << j.dump() << std::endl;
-        msg_id += 1;
-    }
+    void send(T& msg);
 
     void visit(MessageT<Echo>& msg);
     void visit(MessageT<Init>& msg);
@@ -33,6 +26,7 @@ public:
 private:
     template<typename T, typename R, typename Ok>
     void package_reply(MessageT<T>& msg, R& reply, Ok ok);
+
     string node_id;
     vector<string> nodes;
     int msg_id = 0;
@@ -40,6 +34,28 @@ private:
     std::set<int> messages;
     TopologyT topology;
 };
+
+template<typename T>
+void Node::step(MessageT<T>& msg) {
+    msg.accept(*this);
+}
+
+template<typename T>
+void Node::send(T& msg) {
+    json j;
+    to_json(j, msg);
+    out << j.dump() << std::endl;
+    msg_id += 1;
+}
+
+template<typename T, typename R, typename Ok>
+void Node::package_reply(MessageT<T>& msg, R& reply, Ok ok) {
+    ok.in_reply_to = msg.body.id;
+    ok.id = msg_id;
+    reply.dst = msg.src;
+    reply.src = node_id;
+    reply.body = ok;
+}
 
 // Generate impl
 void Node::visit(MessageT<Generate>& msg) {
@@ -101,18 +117,6 @@ void Node::visit(MessageT<Topology>& msg) {
     ok.typ = "topology_ok";
     package_reply(msg, reply, ok);
     send(reply);
-}
-
-template<typename T, typename R, typename Ok>
-void Node::package_reply(MessageT<T>& msg, R& reply, Ok ok) {
-    fprintf(stderr, "packaging %s reply to msg from %s\n", ok.typ.c_str(), msg.src.c_str());
-    ok.in_reply_to = msg.body.id;
-    ok.id = msg_id;
-    fprintf(stderr, "packaged %s reply\n", ok.typ.c_str());
-    reply.dst = msg.src;
-    reply.src = node_id;
-    reply.body = ok;
-    fprintf(stderr, "returning %s reply from %s to %s\n", reply.body.typ.c_str(), reply.src.c_str(), reply.dst.c_str());
 }
 
 #endif
