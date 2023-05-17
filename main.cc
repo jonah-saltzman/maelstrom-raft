@@ -31,7 +31,7 @@ int main() {
         } else if (type == "topology") {
             stepper<Topology>(node, j);
         } else {
-            std::cerr << j.dump(4);
+            std::cerr << j.dump(4) << std::endl;
         }
     }
 
